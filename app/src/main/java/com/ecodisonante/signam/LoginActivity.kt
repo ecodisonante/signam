@@ -7,7 +7,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -15,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ecodisonante.signam.model.DataProvider
+import com.ecodisonante.signam.model.UserPreferences
 import com.ecodisonante.signam.ui.components.CustomTextField
+import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.SignaMTheme
 import com.ecodisonante.signam.ui.theme.lightBG
@@ -37,13 +41,27 @@ class LoginActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            SignaMTheme {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .background(color = lightBG)
-                        .fillMaxSize()
-                ) {
+            LoginDisplay()
+        }
+    }
+}
+
+@Composable
+fun LoginDisplay() {
+    SignaMTheme {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .background(color = lightBG)
+                .padding(top = 30.dp)
+                .fillMaxSize()
+        ) {
+            Card(
+                modifier = Modifier
+                    .width(260.dp)
+                    .height(400.dp)
+            ) {
+                Column(Modifier.padding(20.dp)) {
                     LoginForm()
                 }
             }
@@ -51,74 +69,89 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun LoginForm() {
     val context = LocalContext.current
+    val usrPref = UserPreferences(context)
+    if (usrPref.getUserList() == null) usrPref.saveUserList(DataProvider.usuarios)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Card(
+    var emailValue by remember { mutableStateOf("") }
+    var passwdValue by remember { mutableStateOf("") }
+
+    CustomTextField(
+        value = emailValue,
+        label = "Correo",
+        onValueChange = { emailValue = it }
+    )
+
+    Spacer(modifier = Modifier.size(15.dp))
+
+    CustomTextField(
+        value = passwdValue,
+        label = "Contraseña",
+        onValueChange = { passwdValue = it },
+        isPassword = true
+    )
+
+
+
+    Row {
+        Column(
             modifier = Modifier
-                .width(260.dp)
-                .height(350.dp)
+                .fillMaxSize()
+                .width(250.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
 
-                Modifier.padding(20.dp)
-            ) {
-                var emailValue by remember { mutableStateOf("") }
-                var passwdValue by remember { mutableStateOf("") }
 
-                CustomTextField(
-                    value = emailValue,
-                    label = "Correo",
-                    onValueChange = { emailValue = it }
-                )
+            Spacer(modifier = Modifier.size(15.dp))
 
-                Spacer(modifier = Modifier.size(15.dp))
+            FatMainButton(
+                text = "Ingresar",
+                onClick = {
+                    val usuario = usrPref.findUserByEmail(emailValue)
 
-                CustomTextField(
-                    value = passwdValue,
-                    label = "Contraseña",
-                    onValueChange = { passwdValue = it },
-                    isPassword = true
-                )
+                    if (usuario != null && usuario.passwd == passwdValue) {
 
-                Spacer(modifier = Modifier.size(15.dp))
+                        usrPref.saveCurrentUser(usuario)
+                        Toast.makeText(
+                            context,
+                            "Bienvenido ${usuario.name}",
+                            Toast.LENGTH_LONG
+                        ).show()
 
-                MainButton(
-                    text = "Ingresar",
-                    onClick = {
+                        context.startActivity(Intent(context, MainActivity::class.java))
+                    } else {
+
+                        Toast.makeText(
+                            context,
+                            "Credenciales Incorrectas",
+                            Toast.LENGTH_LONG
+                        ).show()
+
                         context.startActivity(Intent(context, LoginActivity::class.java))
-                    },
-                )
-            }
+                    }
+                },
+            )
 
+            Spacer(modifier = Modifier.size(15.dp))
+
+            MainButton(
+                text = "Volver",
+                onClick = {
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                },
+            )
         }
     }
 }
 
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!", modifier = modifier
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    SignaMTheme {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(color = lightBG)
-        ) {
-            LoginForm()
-        }
-    }
+    LoginDisplay()
 }
+
