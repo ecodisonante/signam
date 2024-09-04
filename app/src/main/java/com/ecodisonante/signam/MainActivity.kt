@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Preview(showBackground = true)
 @Composable
 fun MainDisplay() {
     SignaMTheme {
@@ -63,6 +65,7 @@ fun MainDisplay() {
                 contentDescription = "Logo principal",
                 modifier = Modifier.width(250.dp)
             )
+
 
             Row {
                 Column(
@@ -87,26 +90,20 @@ fun LoginButtons() {
     val currentUser = usrPref.getCurrentUser()
 
     FatMainButton(
-        text = if (currentUser != null) "Hola ${currentUser.name}" else "Ingresar",
+        text = if (currentUser != null) "Jugar" else "Ingresar",
         onClick = {
-            // TODO: cual es la proxima pagina ?? xd
             if (currentUser == null) {
                 context.startActivity(Intent(context, LoginActivity::class.java))
             } else {
-                Toast.makeText(
-                    context,
-                    "Ya entraste wn!! que mas quieres??",
-                    Toast.LENGTH_LONG
-                ).show()
+                context.startActivity(Intent(context, LoginActivity::class.java))
             }
-
         },
     )
 
     Spacer(modifier = Modifier.size(50.dp))
 
     MainButton(
-        text = if (currentUser != null) "cambiar usuario" else "Registrarse",
+        text = if (currentUser != null) "Opciones" else "Registrarse",
         onClick = {
             if (currentUser == null) {
                 context.startActivity(Intent(context, RegisterActivity::class.java))
@@ -118,13 +115,11 @@ fun LoginButtons() {
         },
     )
 
+    if (currentUser != null) {
+        Spacer(modifier = Modifier.size(20.dp))
+        Text(text = currentUser.name)
+    }
     Spacer(modifier = Modifier.size(100.dp))
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun Previsualiza() {
-    MainDisplay()
 }
 

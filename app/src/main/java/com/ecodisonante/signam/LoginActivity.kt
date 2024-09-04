@@ -2,7 +2,6 @@ package com.ecodisonante.signam
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,11 +11,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,8 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ecodisonante.signam.model.DataProvider
+import com.ecodisonante.signam.model.UserDataProvider
 import com.ecodisonante.signam.model.UserPreferences
+import com.ecodisonante.signam.ui.components.CustomAlertInfo
+import com.ecodisonante.signam.ui.components.CustomCard
 import com.ecodisonante.signam.ui.components.CustomTextField
 import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
@@ -36,6 +35,7 @@ import com.ecodisonante.signam.ui.theme.SignaMTheme
 import com.ecodisonante.signam.ui.theme.lightBG
 
 class LoginActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -46,6 +46,7 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
+@Preview(showBackground = true)
 @Composable
 fun LoginDisplay() {
     SignaMTheme {
@@ -56,34 +57,26 @@ fun LoginDisplay() {
                 .padding(top = 30.dp)
                 .fillMaxSize()
         ) {
-            Card(
-                modifier = Modifier
-                    .width(260.dp)
-                    .height(400.dp)
-            ) {
-                Column(Modifier.padding(20.dp)) {
-                    LoginForm()
-                }
-            }
+            CustomCard(customHeight = 500) { LoginForm() }
         }
     }
 }
-
 
 @Composable
 fun LoginForm() {
     val context = LocalContext.current
     val usrPref = UserPreferences(context)
-    if (usrPref.getUserList() == null) usrPref.saveUserList(DataProvider.usuarios)
+    if (usrPref.getUserList() == null) usrPref.saveUserList(UserDataProvider.usuarios)
 
     var emailValue by remember { mutableStateOf("") }
     var passwdValue by remember { mutableStateOf("") }
 
-    CustomTextField(
-        value = emailValue,
-        label = "Correo",
-        onValueChange = { emailValue = it }
-    )
+    var showDialog by remember { mutableStateOf(false) }
+    var successLogin by remember { mutableStateOf(false) }
+    var dialogTitle by remember { mutableStateOf("") }
+    var dialogMessage by remember { mutableStateOf("") }
+
+    CustomTextField(value = emailValue, label = "Correo", onValueChange = { emailValue = it })
 
     Spacer(modifier = Modifier.size(15.dp))
 
@@ -94,8 +87,6 @@ fun LoginForm() {
         isPassword = true
     )
 
-
-
     Row {
         Column(
             modifier = Modifier
@@ -105,7 +96,6 @@ fun LoginForm() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
-
             Spacer(modifier = Modifier.size(15.dp))
 
             FatMainButton(
@@ -114,25 +104,16 @@ fun LoginForm() {
                     val usuario = usrPref.findUserByEmail(emailValue)
 
                     if (usuario != null && usuario.passwd == passwdValue) {
-
                         usrPref.saveCurrentUser(usuario)
-                        Toast.makeText(
-                            context,
-                            "Bienvenido ${usuario.name}",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        context.startActivity(Intent(context, MainActivity::class.java))
+                        successLogin = true
+                        dialogTitle = "Bienvenido ${usuario.name}"
+                        dialogMessage = ""
                     } else {
-
-                        Toast.makeText(
-                            context,
-                            "Credenciales Incorrectas",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                        context.startActivity(Intent(context, LoginActivity::class.java))
+                        successLogin = false
+                        dialogTitle = "Credenciales Incorrectas"
+                        dialogMessage = "Si no recuerdas tu contraseña puedes intentar recuperarla."
                     }
+                    showDialog = true
                 },
             )
 
@@ -140,18 +121,27 @@ fun LoginForm() {
 
             MainButton(
                 text = "Volver",
-                onClick = {
-                    context.startActivity(Intent(context, MainActivity::class.java))
-                },
+                onClick = { context.startActivity(Intent(context, MainActivity::class.java)) },
+            )
+
+            Spacer(modifier = Modifier.size(15.dp))
+
+            MainButton(
+                text = "Recuperar Contraseña",
+                onClick = { context.startActivity(Intent(context, MainActivity::class.java)) },
             )
         }
     }
-}
 
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LoginDisplay()
+    CustomAlertInfo(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        title = dialogTitle,
+        message = dialogMessage,
+        onConfirm = {
+            if (successLogin) context.startActivity(Intent(context, MainActivity::class.java))
+            showDialog = false
+        },
+    )
 }
 
