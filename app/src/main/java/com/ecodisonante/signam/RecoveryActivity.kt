@@ -34,21 +34,19 @@ import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.SignaMTheme
 import com.ecodisonante.signam.ui.theme.lightBG
 
-class LoginActivity : ComponentActivity() {
-
+class RecoveryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
-            LoginDisplay()
+            RecoveryDisplay()
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoginDisplay() {
+fun RecoveryDisplay() {
     SignaMTheme {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -57,35 +55,23 @@ fun LoginDisplay() {
                 .padding(top = 30.dp)
                 .fillMaxSize()
         ) {
-            CustomCard(customHeight = 500) { LoginForm() }
+            CustomCard(customHeight = 350) { RecoveryForm() }
         }
     }
 }
 
+
 @Composable
-fun LoginForm() {
+fun RecoveryForm() {
     val context = LocalContext.current
     val usrPref = UserPreferences(context)
     if (usrPref.getUserList() == null) usrPref.saveUserList(UserDataProvider.usuarios)
 
     var emailValue by remember { mutableStateOf("") }
-    var passwdValue by remember { mutableStateOf("") }
-
     var showDialog by remember { mutableStateOf(false) }
-    var successLogin by remember { mutableStateOf(false) }
-    var dialogTitle by remember { mutableStateOf("") }
-    var dialogMessage by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
 
     CustomTextField(value = emailValue, label = "Correo", onValueChange = { emailValue = it })
-
-    Spacer(modifier = Modifier.size(15.dp))
-
-    CustomTextField(
-        value = passwdValue,
-        label = "Contraseña",
-        onValueChange = { passwdValue = it },
-        isPassword = true
-    )
 
     Row {
         Column(
@@ -99,20 +85,16 @@ fun LoginForm() {
             Spacer(modifier = Modifier.size(15.dp))
 
             FatMainButton(
-                text = "Ingresar",
+                text = "Recuperar",
                 onClick = {
                     val usuario = usrPref.findUserByEmail(emailValue)
 
-                    if (usuario != null && usuario.passwd == passwdValue) {
-                        usrPref.saveCurrentUser(usuario)
-                        successLogin = true
-                        dialogTitle = "Bienvenido ${usuario.name}"
-                        dialogMessage = ""
+                    if (usuario != null) {
+                        message = "tu clave es ${usuario.passwd}"
                     } else {
-                        successLogin = false
-                        dialogTitle = "Credenciales Incorrectas"
-                        dialogMessage = "Si no recuerdas tu contraseña puedes intentar recuperarla."
+                        message = "usuario no encontrado"
                     }
+
                     showDialog = true
                 },
             )
@@ -121,27 +103,21 @@ fun LoginForm() {
 
             MainButton(
                 text = "Volver",
-                onClick = { context.startActivity(Intent(context, MainActivity::class.java)) },
+                onClick = {
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                },
             )
 
-            Spacer(modifier = Modifier.size(15.dp))
-
-            MainButton(
-                text = "Recuperar Contraseña",
-                onClick = { context.startActivity(Intent(context, RecoveryActivity::class.java)) },
+            CustomAlertInfo(
+                showDialog = showDialog,
+                onDismiss = { showDialog = false },
+                onConfirm = {
+                    showDialog = false
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                },
+                title = "Revisa tu  correo",
+                message = "Hemos enviado un mensaje para que recuperes tu contraseña." + "\n\n(psst... $message)"
             )
         }
     }
-
-    CustomAlertInfo(
-        showDialog = showDialog,
-        onDismiss = { showDialog = false },
-        title = dialogTitle,
-        message = dialogMessage,
-        onConfirm = {
-            if (successLogin) context.startActivity(Intent(context, MainActivity::class.java))
-            showDialog = false
-        },
-    )
 }
-
