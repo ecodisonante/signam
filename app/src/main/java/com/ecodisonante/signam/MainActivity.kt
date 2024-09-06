@@ -2,7 +2,6 @@ package com.ecodisonante.signam
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ecodisonante.signam.game.SelectGameActivity
 import com.ecodisonante.signam.model.UserPreferences
 import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
@@ -95,7 +95,7 @@ fun LoginButtons() {
             if (currentUser == null) {
                 context.startActivity(Intent(context, LoginActivity::class.java))
             } else {
-                context.startActivity(Intent(context, LoginActivity::class.java))
+                context.startActivity(Intent(context, SelectGameActivity::class.java))
             }
         },
     )
@@ -103,7 +103,7 @@ fun LoginButtons() {
     Spacer(modifier = Modifier.size(50.dp))
 
     MainButton(
-        text = if (currentUser != null) "Opciones" else "Registrarse",
+        text = if (currentUser != null) "Salir" else "Registrarse",
         onClick = {
             if (currentUser == null) {
                 context.startActivity(Intent(context, RegisterActivity::class.java))

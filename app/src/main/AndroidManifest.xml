@@ -13,6 +13,11 @@
         android:theme="@style/Theme.SignaM"
         tools:targetApi="31">
         <activity
+            android:name=".game.SelectGameActivity"
+            android:exported="false"
+            android:label="@string/title_activity_select_game"
+            android:theme="@style/Theme.SignaM" />
+        <activity
             android:name=".RecoveryActivity"
             android:exported="false"
             android:label="@string/title_activity_recovery"
