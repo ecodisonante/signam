@@ -29,11 +29,14 @@ import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.SignaMTheme
 import com.ecodisonante.signam.ui.theme.lightBG
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
         enableEdgeToEdge()
 
         setContent {

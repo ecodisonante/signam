@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1009599601342",
+    "firebase_url": "https://signam-8f3de-default-rtdb.firebaseio.com",
+    "project_id": "signam-8f3de",
+    "storage_bucket": "signam-8f3de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009599601342:android:9dfb0f65ba4b0beee7dcef",
+        "android_client_info": {
+          "package_name": "com.ecodisonante.signam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCSRZCmnDpoAEMMg2CrYx30U4U4FfcBYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
