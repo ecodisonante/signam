@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ecodisonante.signam.MainActivity
+import com.ecodisonante.signam.RecoveryActivity
+import com.ecodisonante.signam.model.UserPreferences
 import com.ecodisonante.signam.ui.components.CustomAlertInfo
 import com.ecodisonante.signam.ui.components.CustomCard
 import com.ecodisonante.signam.ui.components.CustomTextField
@@ -25,8 +27,9 @@ import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.lightBG
 import com.ecodisonante.signam.viewmodel.UserViewModel
 
+
 @Composable
-fun RegisterScreen(viewModel: UserViewModel) {
+fun LoginScreen(viewModel: UserViewModel) {
     val context = LocalContext.current
     val user by viewModel.user
     val showDialog by viewModel.showDialog
@@ -42,15 +45,7 @@ fun RegisterScreen(viewModel: UserViewModel) {
             .fillMaxSize()
     ) {
         CustomCard(customHeight = 500) {
-            CustomTextField(
-                value = user.name,
-                label = "Nombre",
-                onValueChange = { viewModel.updateUser(name = it) })
-
-            Spacer(modifier = Modifier.size(15.dp))
-
-            CustomTextField(
-                value = user.email,
+            CustomTextField(value = user.email,
                 label = "Correo",
                 onValueChange = { viewModel.updateUser(email = it) })
 
@@ -62,25 +57,46 @@ fun RegisterScreen(viewModel: UserViewModel) {
                 onValueChange = { viewModel.updateUser(password = it) },
                 isPassword = true
             )
-
             Row {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .width(250.dp),
                     verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(modifier = Modifier.size(15.dp))
 
-                    FatMainButton(text = "Registrarse", onClick = { viewModel.registerUser() })
+                    FatMainButton(
+                        text = "Ingresar",
+                        onClick = {
+                            viewModel.loginUser(UserPreferences(context))
+                        },
+                    )
 
                     Spacer(modifier = Modifier.size(15.dp))
 
                     MainButton(
                         text = "Volver",
                         onClick = {
-                            context.startActivity(Intent(context, MainActivity::class.java))
+                            context.startActivity(
+                                Intent(
+                                    context, MainActivity::class.java
+                                )
+                            )
+                        },
+                    )
+
+                    Spacer(modifier = Modifier.size(15.dp))
+
+                    MainButton(
+                        text = "Recuperar Contraseña",
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context, RecoveryActivity::class.java
+                                )
+                            )
                         },
                     )
                 }

@@ -25,14 +25,16 @@ import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.lightBG
 import com.ecodisonante.signam.viewmodel.UserViewModel
 
+
 @Composable
-fun RegisterScreen(viewModel: UserViewModel) {
+fun RecoverScreen(viewModel: UserViewModel) {
     val context = LocalContext.current
     val user by viewModel.user
     val showDialog by viewModel.showDialog
     val dialogTitle by viewModel.dialogTitle
     val dialogMessage by viewModel.dialogMessage
     val successAction by viewModel.successAction
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -41,27 +43,10 @@ fun RegisterScreen(viewModel: UserViewModel) {
             .padding(top = 30.dp)
             .fillMaxSize()
     ) {
-        CustomCard(customHeight = 500) {
-            CustomTextField(
-                value = user.name,
-                label = "Nombre",
-                onValueChange = { viewModel.updateUser(name = it) })
-
-            Spacer(modifier = Modifier.size(15.dp))
-
-            CustomTextField(
-                value = user.email,
+        CustomCard(customHeight = 350) {
+            CustomTextField(value = user.email,
                 label = "Correo",
                 onValueChange = { viewModel.updateUser(email = it) })
-
-            Spacer(modifier = Modifier.size(15.dp))
-
-            CustomTextField(
-                value = user.passwd,
-                label = "Contraseña",
-                onValueChange = { viewModel.updateUser(password = it) },
-                isPassword = true
-            )
 
             Row {
                 Column(
@@ -69,35 +54,34 @@ fun RegisterScreen(viewModel: UserViewModel) {
                         .fillMaxSize()
                         .width(250.dp),
                     verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(modifier = Modifier.size(15.dp))
 
-                    FatMainButton(text = "Registrarse", onClick = { viewModel.registerUser() })
-
-                    Spacer(modifier = Modifier.size(15.dp))
-
-                    MainButton(
-                        text = "Volver",
-                        onClick = {
-                            context.startActivity(Intent(context, MainActivity::class.java))
-                        },
-                    )
+                    FatMainButton(text = "Recuperar", onClick = { viewModel.recoverUser() })
                 }
+
+                MainButton(
+                    text = "Volver",
+                    onClick = {
+                        context.startActivity(Intent(context, MainActivity::class.java))
+                    },
+                )
+
             }
         }
-
-        CustomAlertInfo(
-            showDialog = showDialog,
-            onDismiss = { viewModel.dismissDialog() },
-            title = dialogTitle,
-            message = dialogMessage,
-            onConfirm = {
-                if (successAction) {
-                    context.startActivity(Intent(context, MainActivity::class.java))
-                }
-                viewModel.dismissDialog()
-            },
-        )
     }
+
+    CustomAlertInfo(
+        showDialog = showDialog,
+        onDismiss = { viewModel.dismissDialog() },
+        title = dialogTitle,
+        message = dialogMessage,
+        onConfirm = {
+            if (successAction) {
+                context.startActivity(Intent(context, MainActivity::class.java))
+            }
+            viewModel.dismissDialog()
+        },
+    )
 }

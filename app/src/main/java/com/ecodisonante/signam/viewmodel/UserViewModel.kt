@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ecodisonante.signam.data.UserService
 import com.ecodisonante.signam.model.User
+import com.ecodisonante.signam.model.UserPreferences
 
 class UserViewModel(private val userService: UserService) : ViewModel() {
 
@@ -20,11 +21,33 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
     private val _dialogMessage = mutableStateOf("")
     val dialogMessage: State<String> = _dialogMessage
 
-    private val _successRegister = mutableStateOf(false)
-    val successRegister: State<Boolean> = _successRegister
+    private val _successAction = mutableStateOf(false)
+    val successAction: State<Boolean> = _successAction
 
-    fun updateUser(name: String, email: String, password: String) {
-        _user.value = user.value.copy(name = name, email = email, passwd = password)
+    // actualizar usuario cuando se modifica en el formulario
+    fun updateUser(
+        name: String = _user.value.name,
+        email: String = _user.value.email,
+        password: String = _user.value.passwd
+    ) {
+        _user.value = _user.value.copy(name = name, email = email, passwd = password)
+    }
+
+
+    fun loginUser(userPreferences: UserPreferences) {
+        userService.getByEmail(user.value.email) { login ->
+            if (login != null && login.passwd == _user.value.passwd) {
+                userPreferences.saveCurrentUser(login)
+                _dialogTitle.value = "Bienvenido ${login.name}"
+                _dialogMessage.value = ""
+                _successAction.value = true
+            } else {
+                _dialogTitle.value = "Credenciales Incorrectas"
+                _dialogMessage.value = "Si no recuerdas tu contraseña puedes intentar recuperarla."
+                _successAction.value = false
+            }
+        }
+        _showDialog.value = true
     }
 
     fun registerUser() {
@@ -35,26 +58,45 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
             return
         }
 
-        userService.getByEmail(user.value.email) { existingUser ->
-            if (existingUser != null) {
+        userService.getByEmail(user.value.email) { newUser ->
+            if (newUser != null) {
                 _dialogTitle.value = "Error"
                 _dialogMessage.value = "Ya hay un usuario registrado con ese email"
-                _showDialog.value = true
             } else {
                 userService.createUser(user.value) { success ->
                     if (success) {
                         _dialogTitle.value = "Bienvenido"
                         _dialogMessage.value = "Ya puedes acceder con tu correo y contraseña"
-                        _successRegister.value = true
+                        _successAction.value = true
                     } else {
                         _dialogTitle.value = "Error"
                         _dialogMessage.value = "Lo siento, no pudimos completar tu registro."
                     }
-                    _showDialog.value = true
                 }
             }
+            _showDialog.value = true
         }
     }
+
+
+    fun recoverUser() {
+        userService.getByEmail(user.value.email) { recover ->
+            val message: String
+
+            if (recover != null) {
+                message = "tu clave es ${recover.passwd}"
+            } else {
+                message = "usuario no encontrado"
+            }
+
+            _dialogTitle.value = "Revisa tu  correo"
+            _dialogMessage.value =
+                "Hemos enviado un mensaje para que recuperes tu contraseña.\n\n(psst... $message)"
+            _successAction.value = true
+            _showDialog.value = true
+        }
+    }
+
 
     fun dismissDialog() {
         _showDialog.value = false
