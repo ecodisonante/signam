@@ -89,7 +89,6 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         }
     }
 
-
     fun recoverUser() {
         userService.getByEmail(user.value.email) { recover ->
 
@@ -183,6 +182,27 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
                     _successAction.value = false
                     _showDialog.value = true
                 }
+            }
+    }
+
+    fun sendPasswordResetEmail() {
+        FirebaseAuth.getInstance().sendPasswordResetEmail(user.value.email)
+            .addOnCompleteListener { result ->
+                if (result.isSuccessful) {
+                    _dialogTitle.value = "Restablecer Contraseña"
+                    _dialogMessage.value =
+                        "Hemos enviado un mensaje para que recuperes tu contraseña."
+                    _successAction.value = true
+                } else {
+                    Log.e(
+                        "UserService",
+                        "Error en registerUserWithEmailPassword: ${result.exception?.message}"
+                    )
+                    _dialogTitle.value = "Error"
+                    _dialogMessage.value =
+                        "Lo siento, no pudimos enviar el correo de recuperación. Intentalo nuevamente."
+                }
+                _showDialog.value = true
             }
     }
 

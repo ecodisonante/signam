@@ -35,7 +35,6 @@ fun RecoverScreen(viewModel: UserViewModel) {
     val dialogMessage by viewModel.dialogMessage
     val successAction by viewModel.successAction
 
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -57,8 +56,8 @@ fun RecoverScreen(viewModel: UserViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(modifier = Modifier.size(15.dp))
-
-                    FatMainButton(text = "Recuperar", onClick = { viewModel.recoverUser() })
+                    FatMainButton(text = "Recuperar",
+                        onClick = { viewModel.sendPasswordResetEmail() })
                 }
 
                 MainButton(
@@ -67,7 +66,6 @@ fun RecoverScreen(viewModel: UserViewModel) {
                         context.startActivity(Intent(context, MainActivity::class.java))
                     },
                 )
-
             }
         }
     }
