@@ -1,11 +1,15 @@
 package com.ecodisonante.signam.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ecodisonante.signam.data.UserService
 import com.ecodisonante.signam.model.User
 import com.ecodisonante.signam.model.UserPreferences
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.UserProfileChangeRequest
 
 class UserViewModel(private val userService: UserService) : ViewModel() {
 
@@ -33,7 +37,10 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         _user.value = _user.value.copy(name = name, email = email, passwd = password)
     }
 
-
+    @Deprecated(
+        message = "Este metodo se eliminará cuando se use Firebase Realtime Database con otros objetos",
+        ReplaceWith("signInWithEmailAndPassword()")
+    )
     fun loginUser(userPreferences: UserPreferences) {
         userService.getByEmail(user.value.email) { login ->
             if (login != null && login.passwd == _user.value.passwd) {
@@ -50,6 +57,10 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         _showDialog.value = true
     }
 
+    @Deprecated(
+        message = "Este metodo se eliminará cuando se use Firebase Realtime Database con otros objetos",
+        ReplaceWith("registerUserWithEmailPassword()")
+    )
     fun registerUser() {
         if (user.value.name.isEmpty() || user.value.email.isEmpty() || user.value.passwd.isEmpty()) {
             _dialogTitle.value = "Faltan Datos"
@@ -81,12 +92,11 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
 
     fun recoverUser() {
         userService.getByEmail(user.value.email) { recover ->
-            val message: String
 
-            if (recover != null) {
-                message = "tu clave es ${recover.passwd}"
+            val message: String = if (recover != null) {
+                "tu clave es ${recover.passwd}"
             } else {
-                message = "usuario no encontrado"
+                "usuario no encontrado"
             }
 
             _dialogTitle.value = "Revisa tu  correo"
@@ -97,6 +107,84 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         }
     }
 
+
+    // Autenticacion usando FirebaseAuth
+
+    fun signInWithEmailAndPassword() {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(user.value.email, user.value.passwd)
+            .addOnCompleteListener { result ->
+                if (result.isSuccessful) {
+                    val userDisplayName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
+                    _dialogTitle.value = "Bienvenido $userDisplayName"
+                    _dialogMessage.value = ""
+                    _successAction.value = true
+                } else {
+                    Log.e(
+                        "UserService",
+                        "Error en signInWithEmailAndPassword: ${result.exception?.message}"
+                    )
+                    _dialogTitle.value = "Credenciales Incorrectas"
+                    _dialogMessage.value =
+                        "Si no recuerdas tu contraseña, puedes intentar recuperarla."
+                    _successAction.value = false
+                }
+                _showDialog.value = true
+            }
+    }
+
+    fun registerUserWithEmailPassword() {
+
+        // validar que los datos no estén vacíos
+        if (user.value.name.isEmpty() || user.value.email.isEmpty() || user.value.passwd.isEmpty()) {
+            _dialogTitle.value = "Faltan Datos"
+            _dialogMessage.value = "Debes completar todos los campos para poder registrarte"
+            _showDialog.value = true
+            return
+        }
+
+        FirebaseAuth.getInstance()
+            .createUserWithEmailAndPassword(user.value.email, user.value.passwd)
+            .addOnCompleteListener { result ->
+                if (result.isSuccessful) {
+                    val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+                    // agrega displayName
+                    val profileUpdates =
+                        UserProfileChangeRequest.Builder().setDisplayName(user.value.name).build()
+
+                    firebaseUser?.updateProfile(profileUpdates)
+                        ?.addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                _dialogTitle.value = "Bienvenido"
+                                _dialogMessage.value =
+                                    "Ya puedes acceder con tu correo y contraseña"
+                                _successAction.value = true
+                            } else {
+                                _dialogTitle.value = "Error"
+                                _dialogMessage.value =
+                                    "No se pudo actualizar el perfil del usuario."
+                                _successAction.value = false
+                            }
+                            _showDialog.value = true
+                        }
+                } else {
+                    // excepcion por email repetido
+                    if (result.exception is FirebaseAuthUserCollisionException) {
+                        _dialogTitle.value = "Error de registro"
+                        _dialogMessage.value = "Ya hay un usuario registrado con ese email."
+                    } else {
+                        Log.e(
+                            "UserService",
+                            "Error en registerUserWithEmailPassword: ${result.exception?.message}"
+                        )
+                        _dialogTitle.value = "Error"
+                        _dialogMessage.value = "Lo siento, no pudimos completar tu registro."
+                    }
+                    _successAction.value = false
+                    _showDialog.value = true
+                }
+            }
+    }
 
     fun dismissDialog() {
         _showDialog.value = false

@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ecodisonante.signam.MainActivity
 import com.ecodisonante.signam.RecoveryActivity
-import com.ecodisonante.signam.model.UserPreferences
 import com.ecodisonante.signam.ui.components.CustomAlertInfo
 import com.ecodisonante.signam.ui.components.CustomCard
 import com.ecodisonante.signam.ui.components.CustomTextField
@@ -70,7 +69,7 @@ fun LoginScreen(viewModel: UserViewModel) {
                     FatMainButton(
                         text = "Ingresar",
                         onClick = {
-                            viewModel.loginUser(UserPreferences(context))
+                            viewModel.signInWithEmailAndPassword()
                         },
                     )
 

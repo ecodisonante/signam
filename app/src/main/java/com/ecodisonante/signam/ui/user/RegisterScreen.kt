@@ -73,7 +73,7 @@ fun RegisterScreen(viewModel: UserViewModel) {
                 ) {
                     Spacer(modifier = Modifier.size(15.dp))
 
-                    FatMainButton(text = "Registrarse", onClick = { viewModel.registerUser() })
+                    FatMainButton(text = "Registrarse", onClick = { viewModel.registerUserWithEmailPassword() })
 
                     Spacer(modifier = Modifier.size(15.dp))
 
