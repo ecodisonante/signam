@@ -89,6 +89,10 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         }
     }
 
+    @Deprecated(
+        message = "Este metodo se eliminará cuando esté seguro que se usará el otro xd",
+        ReplaceWith("sendPasswordResetEmail()")
+    )
     fun recoverUser() {
         userService.getByEmail(user.value.email) { recover ->
 
