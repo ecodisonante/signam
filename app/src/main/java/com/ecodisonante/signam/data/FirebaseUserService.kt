@@ -10,36 +10,42 @@ import com.google.firebase.database.ValueEventListener
 class FirebaseUserService(private val database: DatabaseReference) : UserService {
 
     override fun getByEmail(email: String, onResult: (User?) -> Unit) {
-        val usersRef = database.child("users")
-        val foundUser = usersRef.orderByChild("email").equalTo(email)
-
-        foundUser.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    val user = snapshot.children.firstOrNull()?.getValue(User::class.java)
+        val searchUser = User(email = email)
+        database.child("users").child(getUserKey(searchUser))
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val user = snapshot.getValue(User::class.java)
                     onResult(user)
-                } else {
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("UserService", "Error en getUserByEmail: ${error.message}")
                     onResult(null)
                 }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("UserService", "Error en getByEmail: ${error.message}")
-                onResult(null)
-            }
-        })
+            })
     }
 
     override fun createUser(user: User, onResult: (Boolean) -> Unit) {
-        database.child("users").push().setValue(user).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                onResult(true)
-            } else {
-                onResult(false)
-            }
+        database.child("users").child(getUserKey(user)).setValue(user).addOnCompleteListener { task ->
+            onResult(task.isSuccessful)
         }
     }
 
+    fun updateUser(user: User, onResult: (Boolean) -> Unit) {
+        database.child("users").child(getUserKey(user)).setValue(user)
+            .addOnCompleteListener { task ->
+                onResult(task.isSuccessful)
+            }
+    }
 
-    // Otros métodos CRUD
+    fun deleteUser(userKey: String, onResult: (Boolean) -> Unit) {
+        database.child("users").child(userKey).removeValue().addOnCompleteListener { task ->
+            onResult(task.isSuccessful)
+        }
+    }
+
+    fun getUserKey(user: User): String {
+        return user.email.replace(".", "_")
+    }
+
 }

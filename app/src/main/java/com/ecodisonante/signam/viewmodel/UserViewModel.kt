@@ -13,7 +13,7 @@ import com.google.firebase.auth.UserProfileChangeRequest
 
 class UserViewModel(private val userService: UserService) : ViewModel() {
 
-    private val _user = mutableStateOf(User("", "", ""))
+    private val _user = mutableStateOf(User("", "", "", "", "", ""))
     val user: State<User> = _user
 
     private val _showDialog = mutableStateOf(false)
@@ -32,9 +32,19 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
     fun updateUser(
         name: String = _user.value.name,
         email: String = _user.value.email,
-        password: String = _user.value.passwd
+        password: String = _user.value.passwd,
+        city: String = _user.value.city,
+        phone: String = _user.value.phone,
+        about: String = _user.value.about,
     ) {
-        _user.value = _user.value.copy(name = name, email = email, passwd = password)
+        _user.value = _user.value.copy(
+            name = name,
+            email = email,
+            passwd = password,
+            city = city,
+            phone = phone,
+            about = about
+        )
     }
 
     @Deprecated(
@@ -57,36 +67,9 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         _showDialog.value = true
     }
 
-    @Deprecated(
-        message = "Este metodo se eliminará cuando se use Firebase Realtime Database con otros objetos",
-        ReplaceWith("registerUserWithEmailPassword()")
-    )
-    fun registerUser() {
-        if (user.value.name.isEmpty() || user.value.email.isEmpty() || user.value.passwd.isEmpty()) {
-            _dialogTitle.value = "Faltan Datos"
-            _dialogMessage.value = "Debes completar todos los campos para poder registrarte"
-            _showDialog.value = true
-            return
-        }
-
-        userService.getByEmail(user.value.email) { newUser ->
-            if (newUser != null) {
-                _dialogTitle.value = "Error"
-                _dialogMessage.value = "Ya hay un usuario registrado con ese email"
-            } else {
-                userService.createUser(user.value) { success ->
-                    if (success) {
-                        _dialogTitle.value = "Bienvenido"
-                        _dialogMessage.value = "Ya puedes acceder con tu correo y contraseña"
-                        _successAction.value = true
-                    } else {
-                        _dialogTitle.value = "Error"
-                        _dialogMessage.value = "Lo siento, no pudimos completar tu registro."
-                    }
-                }
-            }
-            _showDialog.value = true
-        }
+    fun addUserData(onResult: (Boolean?) -> Unit) {
+        updateUser(password = "")
+        userService.createUser(user.value) { }
     }
 
     @Deprecated(
@@ -150,6 +133,8 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
             .addOnCompleteListener { result ->
                 if (result.isSuccessful) {
                     val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+                    addUserData { }
 
                     // agrega displayName
                     val profileUpdates =

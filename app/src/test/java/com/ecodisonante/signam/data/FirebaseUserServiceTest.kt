@@ -1,9 +1,13 @@
-import com.ecodisonante.signam.data.FirebaseUserService
+package com.ecodisonante.signam.data
+
 import com.ecodisonante.signam.model.User
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +15,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.any
+import org.mockito.Mockito.anyString
 import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -19,7 +24,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest=Config.NONE)
+@Config(manifest = Config.NONE)
 class FirebaseUserServiceTest {
 
     @Mock
@@ -28,8 +33,8 @@ class FirebaseUserServiceTest {
     @Mock
     private lateinit var mockUsersRef: DatabaseReference
 
-    @Mock
-    private lateinit var mockQuery: Query
+//    @Mock
+//    private lateinit var mockQuery: Query
 
     @Captor
     private lateinit var captor: ArgumentCaptor<ValueEventListener>
@@ -47,31 +52,29 @@ class FirebaseUserServiceTest {
         // Arrange
         val testUser = User("user@test.com", "Test User", "123456")
         `when`(database.child("users")).thenReturn(mockUsersRef)
-        `when`(mockUsersRef.orderByChild("email")).thenReturn(mockQuery)
-        `when`(mockQuery.equalTo(testUser.email)).thenReturn(mockQuery)
-        doNothing().`when`(mockQuery).addListenerForSingleValueEvent(capture(captor))
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        doNothing().`when`(mockUsersRef).addListenerForSingleValueEvent(capture(captor))
 
         // Act
         firebaseUserService.getByEmail(testUser.email) { user ->
             // Assert
-            assert(user != null)
-            assert(user?.email == testUser.email)
+            assertNull(user != null)
+            assertEquals(testUser.email, user?.email)
         }
     }
 
     @Test
     fun getByEmail_returnsNull() {
         // Arrange
-        val testEmail = "notfound@example.com"
+        val testUser = User("user@test.com", "Test User", "123456")
         `when`(database.child("users")).thenReturn(mockUsersRef)
-        `when`(mockUsersRef.orderByChild("email")).thenReturn(mockQuery)
-        `when`(mockQuery.equalTo(testEmail)).thenReturn(mockQuery)
-        doNothing().`when`(mockQuery).addListenerForSingleValueEvent(capture(captor))
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        doNothing().`when`(mockUsersRef).addListenerForSingleValueEvent(capture(captor))
 
         // Act
-        firebaseUserService.getByEmail(testEmail) { user ->
+        firebaseUserService.getByEmail(testUser.email) { user ->
             // Assert
-            assert(user == null)
+            assertNull(user)
         }
     }
 
@@ -80,13 +83,13 @@ class FirebaseUserServiceTest {
         // Arrange
         val testUser = User("user@test.com", "Test User", "123456")
         `when`(database.child("users")).thenReturn(mockUsersRef)
-        `when`(mockUsersRef.push()).thenReturn(mockUsersRef)
-        `when`(mockUsersRef.setValue(any())).thenReturn(Tasks.forResult(null))
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.setValue(testUser)).thenReturn(Tasks.forResult(null))
 
         // Act
         firebaseUserService.createUser(testUser) { success ->
             // Assert
-            assert(success)
+            assertTrue(success)
         }
     }
 
@@ -95,15 +98,74 @@ class FirebaseUserServiceTest {
         // Arrange
         val testUser = User("user@test.com", "Test User", "123456")
         `when`(database.child("users")).thenReturn(mockUsersRef)
-        `when`(mockUsersRef.push()).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
         `when`(mockUsersRef.setValue(any())).thenReturn(Tasks.forException(Exception("Test Error")))
 
         // Act
         firebaseUserService.createUser(testUser) { success ->
             // Assert
-            assert(success)
+            assertFalse(success)
+        }
+    }
+
+    @Test
+    fun updateUser_returnsTrue() {
+        // Arrange
+        val testUser = User("user@test.com", "Test User", "123456")
+        `when`(database.child("users")).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.setValue(testUser)).thenReturn(Tasks.forResult(null))
+
+        // Act
+        firebaseUserService.updateUser(testUser) { success ->
+            // Assert
+            assertTrue(success)
+        }
+    }
+
+    @Test
+    fun updateUser_returnsFalse() {
+        // Arrange
+        val testUser = User("user@test.com", "Test User", "123456")
+        `when`(database.child("users")).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.setValue(any())).thenReturn(Tasks.forException(Exception("Test Error")))
+
+        // Act
+        firebaseUserService.updateUser(testUser) { success ->
+            // Assert
+            assertFalse(success)
         }
     }
 
 
+    @Test
+    fun deleteUser_returnsTrue() {
+        // Arrange
+        val testUser = User("user@test.com", "Test User", "123456")
+        `when`(database.child("users")).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.removeValue()).thenReturn(Tasks.forResult(null))
+
+        // Act
+        firebaseUserService.deleteUser(testUser.email) { success ->
+            // Assert
+            assertTrue(success)
+        }
+    }
+
+    @Test
+    fun deleteUser_returnsFalse() {
+        // Arrange
+        val testUser = User("user@test.com", "Test User", "123456")
+        `when`(database.child("users")).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.child(anyString())).thenReturn(mockUsersRef)
+        `when`(mockUsersRef.removeValue()).thenReturn(Tasks.forException(Exception("Test Error")))
+
+        // Act
+        firebaseUserService.deleteUser(testUser.email) { success ->
+            // Assert
+            assertFalse(success)
+        }
+    }
 }
