@@ -4,4 +4,6 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_recovery">RecoveryActivity</string>
     <string name="title_activity_select_game">SelectGameActivity</string>
+    <string name="title_activity_voice">VoiceActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 </resources>

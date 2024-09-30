@@ -1,19 +1,21 @@
 package com.ecodisonante.signam.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ecodisonante.signam.data.UserService
 import com.ecodisonante.signam.model.User
 import com.ecodisonante.signam.model.UserPreferences
+import com.ecodisonante.signam.ui.components.CustomAlertInfo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.UserProfileChangeRequest
 
-class UserViewModel(private val userService: UserService) : ViewModel() {
+class UserViewModel(private val userService: UserService, user: User = User()) : ViewModel() {
 
-    private val _user = mutableStateOf(User("", "", "", "", "", ""))
+    private val _user = mutableStateOf(user)
     val user: State<User> = _user
 
     private val _showDialog = mutableStateOf(false)
@@ -67,11 +69,6 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
         _showDialog.value = true
     }
 
-    fun addUserData(onResult: (Boolean?) -> Unit) {
-        updateUser(password = "")
-        userService.createUser(user.value) { }
-    }
-
     @Deprecated(
         message = "Este metodo se eliminará cuando esté seguro que se usará el otro xd",
         ReplaceWith("sendPasswordResetEmail()")
@@ -88,6 +85,21 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
             _dialogTitle.value = "Revisa tu  correo"
             _dialogMessage.value =
                 "Hemos enviado un mensaje para que recuperes tu contraseña.\n\n(psst... $message)"
+            _successAction.value = true
+            _showDialog.value = true
+        }
+    }
+
+    fun updateUserProfile() {
+        userService.updateUser(user.value) { result ->
+            if (result) {
+                _dialogTitle.value = "Perfil Actualizado"
+                _dialogMessage.value = "Ya puedes presumir tu información con tus amigos..."
+            } else {
+                _dialogTitle.value = "Error al actualizar"
+                _dialogMessage.value =
+                    "Intentalo de nuevo más tarde... o en la próxima evaluación ;)"
+            }
             _successAction.value = true
             _showDialog.value = true
         }
@@ -134,7 +146,8 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
                 if (result.isSuccessful) {
                     val firebaseUser = FirebaseAuth.getInstance().currentUser
 
-                    addUserData { }
+//                    updateUser(password = "")
+//                    userService.createUser(user.value) { }
 
                     // agrega displayName
                     val profileUpdates =
@@ -193,6 +206,30 @@ class UserViewModel(private val userService: UserService) : ViewModel() {
                 }
                 _showDialog.value = true
             }
+    }
+
+    fun deleteFirebaseUser() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.delete()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                userService.deleteUser(user.value.email) {
+                    Log.e(
+                        "DeleteUser",
+                        "No se pudo borrar el perfil del usuario ${user.value.email}"
+                    )
+                }
+                _dialogTitle.value = "Se acabó..."
+                _dialogMessage.value =
+                    "Camina sin mirar atrás y no pienses en nuestro roto corazón."
+                _successAction.value = true
+            } else {
+                _dialogTitle.value = "Un grandioso error"
+                _dialogMessage.value =
+                    "El universo no ha querido que podamos eliminar tu registro. Que tal si intentas emmm... nunca ??"
+                _successAction.value = true
+            }
+            _showDialog.value = true
+        }
     }
 
     fun dismissDialog() {

@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ecodisonante.signam.game.SelectGameActivity
 import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
@@ -37,6 +40,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
 
         enableEdgeToEdge()
 
@@ -93,15 +98,33 @@ fun LoginButtons() {
     val currentUser = FirebaseAuth.getInstance().currentUser
 
     FatMainButton(
-        text = if (currentUser != null) "Jugar" else "Ingresar",
+        text = if (currentUser != null) "Mi Perfil" else "Ingresar",
         onClick = {
             if (currentUser == null) {
                 context.startActivity(Intent(context, LoginActivity::class.java))
             } else {
-                context.startActivity(Intent(context, SelectGameActivity::class.java))
+                context.startActivity(Intent(context, ProfileActivity::class.java))
             }
         },
     )
+
+
+    if (currentUser != null) {
+        Spacer(modifier = Modifier.size(20.dp))
+
+        MainButton(
+            text = "Transcribir",
+            onClick = { context.startActivity(Intent(context, VoiceActivity::class.java)) },
+        )
+
+        Spacer(modifier = Modifier.size(20.dp))
+
+        MainButton(
+            text = "Localizar",
+            onClick = { },
+        )
+    }
+
 
     Spacer(modifier = Modifier.size(50.dp))
 
@@ -117,12 +140,12 @@ fun LoginButtons() {
             }
         },
     )
-
-    if (currentUser != null) {
-        Spacer(modifier = Modifier.size(20.dp))
-        Text(text = currentUser.displayName!!)
-    }
-    Spacer(modifier = Modifier.size(100.dp))
+//
+//    if (currentUser != null) {
+//        Spacer(modifier = Modifier.size(20.dp))
+//        Text(text = currentUser.displayName!!)
+//    }
+    Spacer(modifier = Modifier.size(70.dp))
 
 }
 

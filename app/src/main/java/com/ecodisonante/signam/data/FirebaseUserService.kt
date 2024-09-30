@@ -26,22 +26,25 @@ class FirebaseUserService(private val database: DatabaseReference) : UserService
     }
 
     override fun createUser(user: User, onResult: (Boolean) -> Unit) {
-        database.child("users").child(getUserKey(user)).setValue(user).addOnCompleteListener { task ->
-            onResult(task.isSuccessful)
-        }
-    }
-
-    fun updateUser(user: User, onResult: (Boolean) -> Unit) {
         database.child("users").child(getUserKey(user)).setValue(user)
             .addOnCompleteListener { task ->
                 onResult(task.isSuccessful)
             }
     }
 
-    fun deleteUser(userKey: String, onResult: (Boolean) -> Unit) {
-        database.child("users").child(userKey).removeValue().addOnCompleteListener { task ->
-            onResult(task.isSuccessful)
-        }
+    override fun updateUser(user: User, onResult: (Boolean) -> Unit) {
+        database.child("users").child(getUserKey(user)).setValue(user)
+            .addOnCompleteListener { task ->
+                onResult(task.isSuccessful)
+            }
+    }
+
+    override fun deleteUser(email: String, onResult: (Boolean) -> Unit) {
+        val user = User(email = email)
+        database.child("users").child(getUserKey(user)).removeValue()
+            .addOnCompleteListener { task ->
+                onResult(task.isSuccessful)
+            }
     }
 
     fun getUserKey(user: User): String {
