@@ -1,4 +1,4 @@
-package com.ecodisonante.signam.ui.user
+package com.ecodisonante.signam.ui.assistance
 
 import android.Manifest
 import android.content.Intent
@@ -12,15 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,14 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ecodisonante.signam.MainActivity
-import com.ecodisonante.signam.RecoveryActivity
-import com.ecodisonante.signam.ui.components.CustomAlertInfo
 import com.ecodisonante.signam.ui.components.CustomCard
-import com.ecodisonante.signam.ui.components.CustomTextField
 import com.ecodisonante.signam.ui.components.FatMainButton
 import com.ecodisonante.signam.ui.components.MainButton
 import com.ecodisonante.signam.ui.theme.lightBG
-import com.ecodisonante.signam.viewmodel.UserViewModel
 
 @Preview
 @Composable
@@ -55,7 +47,8 @@ fun VoiceScreen() {
     val recognizer = remember {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES")
         }
