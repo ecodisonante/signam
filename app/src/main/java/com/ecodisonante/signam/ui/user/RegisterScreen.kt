@@ -49,7 +49,7 @@ fun RegisterScreen(viewModel: UserViewModel) {
 
     val voiceCommands = mapOf(
         "volver" to { activity.finish() },
-        "inicio" to { activity.finish() },
+        "inicio" to { context.startActivity(Intent(context, MainActivity::class.java)) },
         "ingresar" to { context.startActivity(Intent(context, LoginActivity::class.java)) },
         "ayuda" to { Toast.makeText(context, "Esta es la pantalla de registro. \n" +
                 "Prueba decir: volver, inicio, ingresar.", Toast.LENGTH_SHORT).show() }

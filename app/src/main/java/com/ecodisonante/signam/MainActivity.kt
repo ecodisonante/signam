@@ -110,12 +110,12 @@ fun LoginButtons() {
             onClick = { context.startActivity(Intent(context, VoiceActivity::class.java)) },
         )
 
-        Spacer(modifier = Modifier.size(20.dp))
-
-        MainButton(
-            text = "Localizar",
-            onClick = { },
-        )
+//        Spacer(modifier = Modifier.size(20.dp))
+//
+//        MainButton(
+//            text = "Localizar",
+//            onClick = { },
+//        )
     }
 
 
