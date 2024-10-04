@@ -1,6 +1,8 @@
 package com.ecodisonante.signam.ui.user
 
+import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,14 +12,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ecodisonante.signam.MainActivity
+import com.ecodisonante.signam.R
 import com.ecodisonante.signam.RecoveryActivity
+import com.ecodisonante.signam.RegisterActivity
+import com.ecodisonante.signam.helper.VoiceRecognitionHelper
 import com.ecodisonante.signam.ui.components.CustomAlertInfo
 import com.ecodisonante.signam.ui.components.CustomCard
 import com.ecodisonante.signam.ui.components.CustomTextField
@@ -35,84 +45,113 @@ fun LoginScreen(viewModel: UserViewModel) {
     val dialogTitle by viewModel.dialogTitle
     val dialogMessage by viewModel.dialogMessage
     val successAction by viewModel.successAction
+    val activity = context as Activity
+    val voiceRecognitionHelper = remember { VoiceRecognitionHelper(context) }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(color = lightBG)
-            .padding(top = 30.dp)
-            .fillMaxSize()
-    ) {
-        CustomCard(customHeight = 500) {
-            CustomTextField(value = user.email,
-                label = "Correo",
-                onValueChange = { viewModel.updateUser(email = it) })
+    val voiceCommands = mapOf(
+        "volver" to { activity.finish() },
+        "inicio" to { context.startActivity(Intent(context, MainActivity::class.java)) },
+        "registrarse" to { context.startActivity(Intent(context, RegisterActivity::class.java)) },
+        "recuperar contraseña" to { context.startActivity(Intent(context, RecoveryActivity::class.java)) },
+        "ayuda" to {
+            Toast.makeText(
+                context, "Esta es la pantalla de inicio de sesion. \n" +
+                        "Prueba decir: volver, inicio, registrarse, recuperar contraseña.", Toast.LENGTH_SHORT
+            ).show()
+        }
+    )
 
-            Spacer(modifier = Modifier.size(15.dp))
-
-            CustomTextField(
-                value = user.passwd,
-                label = "Contraseña",
-                onValueChange = { viewModel.updateUser(password = it) },
-                isPassword = true
-            )
-            Row {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .width(250.dp),
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Spacer(modifier = Modifier.size(15.dp))
-
-                    FatMainButton(
-                        text = "Ingresar",
-                        onClick = {
-                            viewModel.signInWithEmailAndPassword()
-                        },
-                    )
-
-                    Spacer(modifier = Modifier.size(15.dp))
-
-                    MainButton(
-                        text = "Volver",
-                        onClick = {
-                            context.startActivity(
-                                Intent(
-                                    context, MainActivity::class.java
-                                )
-                            )
-                        },
-                    )
-
-                    Spacer(modifier = Modifier.size(15.dp))
-
-                    MainButton(
-                        text = "Recuperar Contraseña",
-                        onClick = {
-                            context.startActivity(
-                                Intent(
-                                    context, RecoveryActivity::class.java
-                                )
-                            )
-                        },
-                    )
-                }
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                voiceRecognitionHelper.startListening(voiceCommands) // Inicia el reconocimiento de voz al hacer clic
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_mic_24),
+                    contentDescription = "Dictar instrucciones"
+                )
             }
         }
+    ) { padding ->
 
-        CustomAlertInfo(
-            showDialog = showDialog,
-            onDismiss = { viewModel.dismissDialog() },
-            title = dialogTitle,
-            message = dialogMessage,
-            onConfirm = {
-                if (successAction) {
-                    context.startActivity(Intent(context, MainActivity::class.java))
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .background(color = lightBG)
+                .padding(top = 30.dp)
+                .fillMaxSize()
+        ) {
+            CustomCard(customHeight = 500) {
+                CustomTextField(value = user.email,
+                    label = "Correo",
+                    onValueChange = { viewModel.updateUser(email = it) })
+
+                Spacer(modifier = Modifier.size(15.dp))
+
+                CustomTextField(
+                    value = user.passwd,
+                    label = "Contraseña",
+                    onValueChange = { viewModel.updateUser(password = it) },
+                    isPassword = true
+                )
+                Row {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .width(250.dp),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Spacer(modifier = Modifier.size(15.dp))
+
+                        FatMainButton(
+                            text = "Ingresar",
+                            onClick = {
+                                viewModel.signInWithEmailAndPassword()
+                            },
+                        )
+
+                        Spacer(modifier = Modifier.size(15.dp))
+
+                        MainButton(
+                            text = "Volver",
+                            onClick = {
+                                context.startActivity(
+                                    Intent(
+                                        context, MainActivity::class.java
+                                    )
+                                )
+                            },
+                        )
+
+                        Spacer(modifier = Modifier.size(15.dp))
+
+                        MainButton(
+                            text = "Recuperar Contraseña",
+                            onClick = {
+                                context.startActivity(
+                                    Intent(
+                                        context, RecoveryActivity::class.java
+                                    )
+                                )
+                            },
+                        )
+                    }
                 }
-                viewModel.dismissDialog()
-            },
-        )
+            }
+
+            CustomAlertInfo(
+                showDialog = showDialog,
+                onDismiss = { viewModel.dismissDialog() },
+                title = dialogTitle,
+                message = dialogMessage,
+                onConfirm = {
+                    if (successAction) {
+                        context.startActivity(Intent(context, MainActivity::class.java))
+                    }
+                    viewModel.dismissDialog()
+                },
+            )
+        }
     }
 }
