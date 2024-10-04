@@ -58,7 +58,7 @@ fun RegisterScreen(viewModel: UserViewModel) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                voiceRecognitionHelper.startListening(voiceCommands) // Inicia el reconocimiento de voz al hacer clic
+                voiceRecognitionHelper.startListening(voiceCommands)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_mic_24),
